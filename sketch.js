@@ -1,4 +1,26 @@
-const trainingData = [[]]
+const trainingData = [
+  {"high":35.67,"low":35.4625,"volume":6.93E+07,"up":1},
+  {"high":35.9875,"low":35.795,"volume":6.85E+07,"up":1},
+  {"high":36.225,"low":35.9675,"volume":75486000,"up":0},
+  {"high":36.15,"low":35.845,"volume":8.02E+07,"up":0},
+  {"high":36.04,"low":35.8275,"volume":5.70E+07,"up":1},
+  {"high":36.075,"low":35.8175,"volume":8.34E+07,"up":1},
+  {"high":36.8,"low":36.24,"volume":1.34E+08,"up":1},
+  {"high":37.0225,"low":36.71,"volume":1.81E+08,"up":0},
+  {"high":36.8725,"low":36.0675,"volume":1.83E+08,"up":0},
+  {"high":36.785,"low":36.4525,"volume":9.35E+07,"up":1},
+  {"high":37.245,"low":36.69,"volume":1.09E+08,"up":1},
+  {"high":38.425,"low":37.2575,"volume":1.95E+08,"up":1},
+  {"high":38.72,"low":38.3625,"volume":1.57E+08,"up":0},
+  {"high":38.485,"low":38.0275,"volume":1.03E+08,"up":1},
+  {"high":38.5175,"low":38.0775,"volume":1.09E+08,"up":1},
+  {"high":39.105,"low":38.6675,"volume":1.30E+08,"up":1},
+  {"high":39.1625,"low":38.7625,"volume":1.04E+08,"up":0},
+  {"high":39.015,"low":38.68,"volume":8.02E+07,"up":0},
+  {"high":38.6425,"low":37.4275,"volume":2.03E+08,"up":0},
+  {"high":38.335,"low":37.7825,"volume":1.34E+08,"up":1},
+  // ...truncated for brevity...
+]
 
 const NUMBER_OF_EPOCHS = 100;
 const inputs2dArray = trainingData.map((r) => r.slice(0, 3));
@@ -121,13 +143,13 @@ async function drawConfusionMatrix() {
 // Prediction
 
 function getNormalizedInput() {
-  const age = parseFloat(document.getElementById("age").value);
-  const exp = parseFloat(document.getElementById("experience").value);
-  const hikes = parseFloat(document.getElementById("hikes").value);
+  const high = parseFloat(document.getElementById("high").value);
+  const exp = parseFloat(document.getElementById("low").value);
+  const volume = parseFloat(document.getElementById("volume").value);
   return [
-    (age - minVals[0]) / (maxVals[0] - minVals[0]),
+    (high - minVals[0]) / (maxVals[0] - minVals[0]),
     (exp - minVals[1]) / (maxVals[1] - minVals[1]),
-    (hikes - minVals[2]) / (maxVals[2] - minVals[2]),
+    (volume - minVals[2]) / (maxVals[2] - minVals[2]),
   ];
 }
 
@@ -150,12 +172,12 @@ function predict() {
     .then((probArray) => {
       const prob = probArray[0];
       const result = prob > 0.5 ? 1 : 0;
-      outputEl.textContent = `Age: ${
-        document.getElementById("age").value
-      }, Years of Experience: ${
-        document.getElementById("experience").value
-      }, Number of Hikes: ${
-        document.getElementById("hikes").value
+      outputEl.textContent = `high: ${
+        document.getElementById("high").value
+      }, Years of low: ${
+        document.getElementById("low").value
+      }, Number of volume: ${
+        document.getElementById("volume").value
       }\nHire This Applicant?: ${result} ${
         result == 1 ? "✅" : "❌"
       } (confidence ${(prob * 100).toFixed(1)}%)`;
@@ -167,19 +189,19 @@ function predict() {
 
 predictBtn.addEventListener("click", predict);
 document
-  .getElementById("age")
+  .getElementById("high")
   .addEventListener(
     "input",
-    (e) => (document.getElementById("ageVal").textContent = e.target.value)
+    (e) => (document.getElementById("highVal").textContent = e.target.value)
   );
 document
-  .getElementById("experience")
+  .getElementById("low")
   .addEventListener(
     "input",
     (e) => (document.getElementById("expVal").textContent = e.target.value)
   );
 document
-  .getElementById("hikes")
+  .getElementById("volume")
   .addEventListener(
     "input",
     (e) => (document.getElementById("hikeVal").textContent = e.target.value)
@@ -189,21 +211,21 @@ trainModel();
 
 // Make 3D scatterplot
 
-const reds = trainingData.filter((p) => p[3] === 0);
+const reds = trainingData.filter((p) => p[3] === 0); 
 const greens = trainingData.filter((p) => p[3] === 1);
 
 // Format hover text for each group
 const redHoverText = reds.map(
-  (p) => `age: ${p[0]}<br>experience: ${p[1]}<br>hikes: ${p[2]}<br>hired: 0`
+  (p) => `high: ${p[0]}<br>low: ${p[1]}<br>volume: ${p[2]}<br>hired: 0`
 );
 const greenHoverText = greens.map(
-  (p) => `age: ${p[0]}<br>experience: ${p[1]}<br>hikes: ${p[2]}<br>hired: 1`
+  (p) => `high: ${p[0]}<br>low: ${p[1]}<br>volume: ${p[2]}<br>hired: 1`
 );
 
 const redTrace = {
-  x: reds.map((p) => p[0]), // age
-  y: reds.map((p) => p[1]), // experience
-  z: reds.map((p) => p[2]), // hikes
+  x: reds.map((p) => p[0]), // high
+  y: reds.map((p) => p[1]), // low
+  z: reds.map((p) => p[2]), // volume
   mode: "markers",
   type: "scatter3d",
   name: "0 = Not Hired",
@@ -226,9 +248,9 @@ const greenTrace = {
 
 const layout = {
   scene: {
-    xaxis: { title: "Age" },
-    yaxis: { title: "Experience (Years)" },
-    zaxis: { title: "Number of Hikes" },
+    xaxis: { title: "high" },
+    yaxis: { title: "low (Years)" },
+    zaxis: { title: "Number of volume" },
   },
   margin: { l: 0, r: 0, b: 0, t: 30 },
   legend: { x: 0.8, y: 0.9 },
